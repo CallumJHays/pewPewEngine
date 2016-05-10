@@ -1,0 +1,137 @@
+   1               		.file	"leds.c"
+   2               	__SP_H__ = 0x3e
+   3               	__SP_L__ = 0x3d
+   4               	__SREG__ = 0x3f
+   5               	__tmp_reg__ = 0
+   6               	__zero_reg__ = 1
+   7               		.text
+   8               	.Ltext0:
+   9               		.cfi_sections	.debug_frame
+  10               		.section	.text.initLEDs,"ax",@progbits
+  11               	.global	initLEDs
+  13               	initLEDs:
+  14               	.LFB0:
+  15               		.file 1 "leds.c"
+   1:leds.c        **** // pewPewEngine/leds.c
+   2:leds.c        **** #include "cpu_speed.h"
+   3:leds.c        **** #include "leds.h"
+   4:leds.c        **** 
+   5:leds.c        **** void initLEDs(void){
+  16               		.loc 1 5 0
+  17               		.cfi_startproc
+  18               	/* prologue: function */
+  19               	/* frame size = 0 */
+  20               	/* stack size = 0 */
+  21               	.L__stack_usage = 0
+   6:leds.c        **** 	DDRB |= (1 << LEFT_LED);
+  22               		.loc 1 6 0
+  23 0000 229A      		sbi 0x4,2
+   7:leds.c        **** 	DDRB |= (1 << RIGHT_LED);
+  24               		.loc 1 7 0
+  25 0002 239A      		sbi 0x4,3
+  26 0004 0895      		ret
+  27               		.cfi_endproc
+  28               	.LFE0:
+  30               		.section	.text.setLED,"ax",@progbits
+  31               	.global	setLED
+  33               	setLED:
+  34               	.LFB1:
+   8:leds.c        **** }
+   9:leds.c        **** 
+  10:leds.c        **** void setLED(int LED, int on){
+  35               		.loc 1 10 0
+  36               		.cfi_startproc
+  37               	.LVL0:
+  38               	/* prologue: function */
+  39               	/* frame size = 0 */
+  40               	/* stack size = 0 */
+  41               	.L__stack_usage = 0
+  11:leds.c        **** 	// Can only turn on LEFT_LED and RIGHT_LED
+  12:leds.c        **** 	if(LED == LEFT_LED || LED == RIGHT_LED){
+  42               		.loc 1 12 0
+  43 0000 9C01      		movw r18,r24
+  44 0002 2250      		subi r18,2
+  45 0004 3109      		sbc r19,__zero_reg__
+  46 0006 2230      		cpi r18,2
+  47 0008 3105      		cpc r19,__zero_reg__
+  48 000a 00F4      		brsh .L2
+  13:leds.c        **** 		if(on){
+  14:leds.c        **** 			PORTB |= (1 << LED);
+  49               		.loc 1 14 0
+  50 000c 95B1      		in r25,0x5
+  51 000e 21E0      		ldi r18,lo8(1)
+  52 0010 30E0      		ldi r19,0
+  53 0012 082E      		mov r0,r24
+  54 0014 00C0      		rjmp 2f
+  55               		1:
+  56 0016 220F      		lsl r18
+  57               		2:
+  58 0018 0A94      		dec r0
+  59 001a 02F4      		brpl 1b
+  13:leds.c        **** 		if(on){
+  60               		.loc 1 13 0
+  61 001c 672B      		or r22,r23
+  62 001e 01F0      		breq .L4
+  63               		.loc 1 14 0
+  64 0020 922B      		or r25,r18
+  65 0022 95B9      		out 0x5,r25
+  66 0024 0895      		ret
+  67               	.L4:
+  15:leds.c        **** 		} else {
+  16:leds.c        **** 			PORTB &= ~(1 << LED);
+  68               		.loc 1 16 0
+  69 0026 2095      		com r18
+  70 0028 2923      		and r18,r25
+  71 002a 25B9      		out 0x5,r18
+  72               	.L2:
+  73 002c 0895      		ret
+  74               		.cfi_endproc
+  75               	.LFE1:
+  77               		.section	.text.toggleLED,"ax",@progbits
+  78               	.global	toggleLED
+  80               	toggleLED:
+  81               	.LFB2:
+  17:leds.c        **** 		}
+  18:leds.c        **** 	}
+  19:leds.c        **** }
+  20:leds.c        **** 
+  21:leds.c        **** void toggleLED(int LED){
+  82               		.loc 1 21 0
+  83               		.cfi_startproc
+  84               	.LVL1:
+  85               	/* prologue: function */
+  86               	/* frame size = 0 */
+  87               	/* stack size = 0 */
+  88               	.L__stack_usage = 0
+  22:leds.c        **** 	PORTB ^= (1 << LED);
+  89               		.loc 1 22 0
+  90 0000 95B1      		in r25,0x5
+  91 0002 21E0      		ldi r18,lo8(1)
+  92 0004 30E0      		ldi r19,0
+  93 0006 082E      		mov r0,r24
+  94 0008 00C0      		rjmp 2f
+  95               		1:
+  96 000a 220F      		lsl r18
+  97               		2:
+  98 000c 0A94      		dec r0
+  99 000e 02F4      		brpl 1b
+ 100 0010 9227      		eor r25,r18
+ 101 0012 95B9      		out 0x5,r25
+ 102 0014 0895      		ret
+ 103               		.cfi_endproc
+ 104               	.LFE2:
+ 106               		.text
+ 107               	.Letext0:
+ 108               		.file 2 "/usr/lib/avr/include/stdint.h"
+DEFINED SYMBOLS
+                            *ABS*:0000000000000000 leds.c
+     /tmp/cc3H8hLL.s:2      *ABS*:000000000000003e __SP_H__
+     /tmp/cc3H8hLL.s:3      *ABS*:000000000000003d __SP_L__
+     /tmp/cc3H8hLL.s:4      *ABS*:000000000000003f __SREG__
+     /tmp/cc3H8hLL.s:5      *ABS*:0000000000000000 __tmp_reg__
+     /tmp/cc3H8hLL.s:6      *ABS*:0000000000000001 __zero_reg__
+     /tmp/cc3H8hLL.s:13     .text.initLEDs:0000000000000000 initLEDs
+     /tmp/cc3H8hLL.s:33     .text.setLED:0000000000000000 setLED
+     /tmp/cc3H8hLL.s:80     .text.toggleLED:0000000000000000 toggleLED
+
+NO UNDEFINED SYMBOLS

@@ -1,0 +1,197 @@
+   1               		.file	"timer.c"
+   2               	__SP_H__ = 0x3e
+   3               	__SP_L__ = 0x3d
+   4               	__SREG__ = 0x3f
+   5               	__tmp_reg__ = 0
+   6               	__zero_reg__ = 1
+   7               		.text
+   8               	.Ltext0:
+   9               		.cfi_sections	.debug_frame
+  10               		.section	.text.initTimerInterrupt,"ax",@progbits
+  11               	.global	initTimerInterrupt
+  13               	initTimerInterrupt:
+  14               	.LFB6:
+  15               		.file 1 "timer.c"
+   1:timer.c       **** // pewPewEngine/timer.c
+   2:timer.c       **** 
+   3:timer.c       **** #include <avr/io.h>
+   4:timer.c       **** #include <stdint.h>
+   5:timer.c       **** #include <avr/interrupt.h>
+   6:timer.c       **** #include <util/delay.h>
+   7:timer.c       **** 
+   8:timer.c       **** uint16_t pewPewTimerDiff = 0;
+   9:timer.c       **** 
+  10:timer.c       **** void initTimerInterrupt(void){
+  16               		.loc 1 10 0
+  17               		.cfi_startproc
+  18               	/* prologue: function */
+  19               	/* frame size = 0 */
+  20               	/* stack size = 0 */
+  21               	.L__stack_usage = 0
+  11:timer.c       ****     // Note: the following code makes very little sense to me. 
+  12:timer.c       ****     // This was provided by my lecturer without reference to a 
+  13:timer.c       ****     // data sheet and therefore I have little to no notion what
+  14:timer.c       ****     // each bit bashing operation is doing.
+  15:timer.c       **** 	//Set to Normal Timer Mode using TCCR0B
+  16:timer.c       ****     TCCR0B &= ~((1<<WGM02));
+  22               		.loc 1 16 0
+  23 0000 85B5      		in r24,0x25
+  24 0002 877F      		andi r24,lo8(-9)
+  25 0004 85BD      		out 0x25,r24
+  17:timer.c       ****     
+  18:timer.c       ****     //Set Prescaler using TCCR0B, using Clock Speed find timer speed = 1/(ClockSpeed/Prescaler)
+  19:timer.c       ****     //Prescaler = 1024
+  20:timer.c       ****     //Timer Speed = 128 nano seconds
+  21:timer.c       ****     //Timer Overflow Speed = 32640 nano seconds (Timer Speed * 255) - (255 since 8-bit timer)
+  22:timer.c       ****     TCCR0B |= (1<<CS02)|(1<<CS00);
+  26               		.loc 1 22 0
+  27 0006 85B5      		in r24,0x25
+  28 0008 8560      		ori r24,lo8(5)
+  29 000a 85BD      		out 0x25,r24
+  23:timer.c       ****     TCCR0B &= ~((1<<CS01));	
+  30               		.loc 1 23 0
+  31 000c 85B5      		in r24,0x25
+  32 000e 8D7F      		andi r24,lo8(-3)
+  33 0010 85BD      		out 0x25,r24
+  24:timer.c       ****     
+  25:timer.c       ****     //enable interrupt overflow
+  26:timer.c       ****     TIMSK0 |= (1 << TOIE0);
+  34               		.loc 1 26 0
+  35 0012 EEE6      		ldi r30,lo8(110)
+  36 0014 F0E0      		ldi r31,0
+  37 0016 8081      		ld r24,Z
+  38 0018 8160      		ori r24,lo8(1)
+  39 001a 8083      		st Z,r24
+  27:timer.c       **** 	
+  28:timer.c       ****     //Ensure to enable global interrupts as well.
+  29:timer.c       ****     sei();
+  40               		.loc 1 29 0
+  41               	/* #APP */
+  42               	 ;  29 "timer.c" 1
+  43 001c 7894      		sei
+  44               	 ;  0 "" 2
+  30:timer.c       **** 
+  31:timer.c       ****     pewPewTimerDiff = 0;
+  45               		.loc 1 31 0
+  46               	/* #NOAPP */
+  47 001e 1092 0000 		sts pewPewTimerDiff+1,__zero_reg__
+  48 0022 1092 0000 		sts pewPewTimerDiff,__zero_reg__
+  49 0026 0895      		ret
+  50               		.cfi_endproc
+  51               	.LFE6:
+  53               		.section	.text.getTimeDiff,"ax",@progbits
+  54               	.global	getTimeDiff
+  56               	getTimeDiff:
+  57               	.LFB7:
+  32:timer.c       **** }
+  33:timer.c       **** 
+  34:timer.c       **** uint16_t getTimeDiff(void){
+  58               		.loc 1 34 0
+  59               		.cfi_startproc
+  60               	/* prologue: function */
+  61               	/* frame size = 0 */
+  62               	/* stack size = 0 */
+  63               	.L__stack_usage = 0
+  35:timer.c       ****     // temp variable
+  36:timer.c       **** 	uint16_t toReturn = pewPewTimerDiff;
+  64               		.loc 1 36 0
+  65 0000 8091 0000 		lds r24,pewPewTimerDiff
+  66 0004 9091 0000 		lds r25,pewPewTimerDiff+1
+  67               	.LVL0:
+  37:timer.c       **** 	pewPewTimerDiff = 0;
+  68               		.loc 1 37 0
+  69 0008 1092 0000 		sts pewPewTimerDiff+1,__zero_reg__
+  70 000c 1092 0000 		sts pewPewTimerDiff,__zero_reg__
+  38:timer.c       **** 	return toReturn;
+  39:timer.c       **** }
+  71               		.loc 1 39 0
+  72 0010 0895      		ret
+  73               		.cfi_endproc
+  74               	.LFE7:
+  76               		.section	.text.__vector_23,"ax",@progbits
+  77               	.global	__vector_23
+  79               	__vector_23:
+  80               	.LFB8:
+  40:timer.c       **** 
+  41:timer.c       **** ISR(TIMER0_OVF_vect){
+  81               		.loc 1 41 0
+  82               		.cfi_startproc
+  83 0000 1F92      		push r1
+  84               	.LCFI0:
+  85               		.cfi_def_cfa_offset 3
+  86               		.cfi_offset 1, -2
+  87 0002 0F92      		push r0
+  88               	.LCFI1:
+  89               		.cfi_def_cfa_offset 4
+  90               		.cfi_offset 0, -3
+  91 0004 0FB6      		in r0,__SREG__
+  92 0006 0F92      		push r0
+  93 0008 1124      		clr __zero_reg__
+  94 000a 2F93      		push r18
+  95               	.LCFI2:
+  96               		.cfi_def_cfa_offset 5
+  97               		.cfi_offset 18, -4
+  98 000c 8F93      		push r24
+  99               	.LCFI3:
+ 100               		.cfi_def_cfa_offset 6
+ 101               		.cfi_offset 24, -5
+ 102 000e 9F93      		push r25
+ 103               	.LCFI4:
+ 104               		.cfi_def_cfa_offset 7
+ 105               		.cfi_offset 25, -6
+ 106               	/* prologue: Signal */
+ 107               	/* frame size = 0 */
+ 108               	/* stack size = 6 */
+ 109               	.L__stack_usage = 6
+  42:timer.c       **** 	// time passed = 32640 microseconds = 33 milliseconds
+  43:timer.c       ****     // 65505ms = max value for pewPewTimer
+  44:timer.c       ****     if(pewPewTimerDiff < 65505){
+ 110               		.loc 1 44 0
+ 111 0010 8091 0000 		lds r24,pewPewTimerDiff
+ 112 0014 9091 0000 		lds r25,pewPewTimerDiff+1
+ 113 0018 813E      		cpi r24,-31
+ 114 001a 2FEF      		ldi r18,-1
+ 115 001c 9207      		cpc r25,r18
+ 116 001e 00F4      		brsh .L3
+  45:timer.c       ****         // increment timer by 33ms
+  46:timer.c       ****         pewPewTimerDiff += 33;
+ 117               		.loc 1 46 0
+ 118 0020 8196      		adiw r24,33
+ 119 0022 9093 0000 		sts pewPewTimerDiff+1,r25
+ 120 0026 8093 0000 		sts pewPewTimerDiff,r24
+ 121               	.L3:
+ 122               	/* epilogue start */
+  47:timer.c       ****     }
+  48:timer.c       **** }...
+ 123               		.loc 1 48 0
+ 124 002a 9F91      		pop r25
+ 125 002c 8F91      		pop r24
+ 126 002e 2F91      		pop r18
+ 127 0030 0F90      		pop r0
+ 128 0032 0FBE      		out __SREG__,r0
+ 129 0034 0F90      		pop r0
+ 130 0036 1F90      		pop r1
+ 131 0038 1895      		reti
+ 132               		.cfi_endproc
+ 133               	.LFE8:
+ 135               	.global	pewPewTimerDiff
+ 136               		.section .bss
+ 139               	pewPewTimerDiff:
+ 140 0000 0000      		.zero	2
+ 141               		.text
+ 142               	.Letext0:
+ 143               		.file 2 "/usr/lib/avr/include/stdint.h"
+DEFINED SYMBOLS
+                            *ABS*:0000000000000000 timer.c
+     /tmp/ccL4g8MQ.s:2      *ABS*:000000000000003e __SP_H__
+     /tmp/ccL4g8MQ.s:3      *ABS*:000000000000003d __SP_L__
+     /tmp/ccL4g8MQ.s:4      *ABS*:000000000000003f __SREG__
+     /tmp/ccL4g8MQ.s:5      *ABS*:0000000000000000 __tmp_reg__
+     /tmp/ccL4g8MQ.s:6      *ABS*:0000000000000001 __zero_reg__
+     /tmp/ccL4g8MQ.s:13     .text.initTimerInterrupt:0000000000000000 initTimerInterrupt
+     /tmp/ccL4g8MQ.s:139    .bss:0000000000000000 pewPewTimerDiff
+     /tmp/ccL4g8MQ.s:56     .text.getTimeDiff:0000000000000000 getTimeDiff
+     /tmp/ccL4g8MQ.s:79     .text.__vector_23:0000000000000000 __vector_23
+
+UNDEFINED SYMBOLS
+__do_clear_bss
