@@ -23,7 +23,7 @@ GameObject* objectCollidingWithType(char* type, bool roundVals, GameObject* obj,
 		} while(obj->nextObject != NULL);
 	}
 
-	// if that failed, return NULL.
+	// if that failed, return NULL
 	return NULL;
 }
 
